@@ -39,32 +39,32 @@ server.post("/api/login", (req, res) => {
 });
 
 function restricted(req, res, next) {
-    const {username, password} = req.headers;
+    const { username, password } = req.headers;
+  
     if (username && password) {
-        Users.getBy({username})
-            .first()
-            .then(user => {
-                if (user && bcrypt.compareSync(password, user.password)) {
-                    next()
-                } else {
-                    res.status(401).json({message: "Invalid credentials!!"})
-                }
-            })
-            .catch(error => {
-                res.status(500).json({error: "ran into error"});
-            })
-    } else {
-        res.status(400).json({message: "provide credentials!"})
-    }
-}
-
-server.get("/api/users", restricted, (req, res) => {
-    Users.get()
-        .then(users => {
-            res.status(200).json(users)
+      Users.getBy({ username })
+        .first()
+        .then(user => {
+          if (user && bcrypt.compareSync(password, user.password)) {
+            next();
+          } else {
+            res.status(401).json({ message: 'Invalid Credentials' });
+          }
         })
         .catch(error => {
-            res.status(500).json(error)
-        })
-})
+          res.status(500).json({ message: 'Ran into an unexpected error' });
+        });
+    } else {
+      res.status(400).json({ message: 'No credentials provided' });
+    }
+  }
+
+  server.get('/api/users', restricted, (req, res) => {
+    Users.get()
+      .then(users => {
+        res.json(users);
+      })
+      .catch(err => res.send(err));
+  });
+  
 module.exports = server;
