@@ -7,6 +7,7 @@ module.exports = {
     useNullAsDefault: true,
     connection: {
       filename: './data/dev.sqlite3'
-    }
+    },
+    setNullAsDefault: true,
   },
 };

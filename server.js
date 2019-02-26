@@ -1,9 +1,15 @@
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const helmet = require("helmet")
+const cors = require("cors");
 const server = express();
 const Users = require("./users/users-module");
+const session = require("express-session");
+const KnexSessionStore = require("connect-session-knex")(session);
 
+const knex = require("knex");
+const knexConfig = require("./knexfile");
+const db = knex(knexConfig.development);
 const sessionConfig = {
     name: "cookieName",
     secret: "random secret",
@@ -14,11 +20,20 @@ const sessionConfig = {
     httpOnly: true,
     resave: false,
     saveUninitialized: false,
+
+    store: new KnexSessionStore({
+        knex: db,
+        tablename: "sessions",
+        sidfieldname: "sid",
+        createtable: true,
+        clearInterval: 1000 * 60 * 60,
+    })
 }
 
 //middleware: 
 server.use(helmet());
 server.use(express.json());
+server.use(cors())
 server.use(session(sessionConfig));
 
 server.post("/api/register", (req, res) => {
@@ -69,4 +84,17 @@ function restricted( req, res, next) {
       .catch(err => res.send(err));
   });
   
+  server.get("/api/logout", (req, res) => {
+      if (req.session) {
+          req.session.destroy(error => {
+              if (error) {
+                  res.send("You're stuck here!")
+              } else {
+                  res.send("see ya later!")
+              }
+          })
+      } else {
+          res.end();
+      }
+  })
 module.exports = server;
